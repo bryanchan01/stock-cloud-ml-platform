@@ -1,0 +1,8 @@
+run_id,ticker_limit,experiment_model,experiment_timestamp,hostname,git_commit,source_file,result_kind,timestamp_utc,model,split_date,test_rows,accuracy,f1,area_under_roc
+2026-05-10_223848_limit_10_logistic_regression,10,logistic_regression,2026-05-10_223848,ip-172-31-93-86,53b00ee,2026-05-10_223848_limit_10_logistic_regression/data/results/model_metrics.csv,model,2026-05-10T22:39:44,logistic_regression,2024-01-01,5614,0.5203063769148557,0.4887965288125955,0.5062590132071562
+ticker_limit_10,10,,,,,ticker_limit_10/results/model_metrics.csv,model,2026-05-10T22:19:19,logistic_regression,2024-01-01,5614,0.5203063769148557,0.4887965288125955,0.5062647485223597
+ticker_limit_10,10,,,,,ticker_limit_10/results/model_metrics.csv,model,2026-05-10T22:20:03,random_forest,2024-01-01,5614,0.5092625578909868,0.4845357000036581,0.4971341904443274
+ticker_limit_100,100,,,,,ticker_limit_100/results/model_metrics.csv,model,2026-05-10T22:26:20,logistic_regression,2024-01-01,57762,0.5246355735604723,0.4516380171772587,0.5086108083272257
+ticker_limit_100,100,,,,,ticker_limit_100/results/model_metrics.csv,model,2026-05-10T22:27:14,random_forest,2024-01-01,57762,0.5249818219590734,0.4535964677225062,0.505444981213983
+ticker_limit_50,50,,,,,ticker_limit_50/results/model_metrics.csv,model,2026-05-10T21:59:04,logistic_regression,2024-01-01,28898,0.5279258080143955,0.4631396226644551,0.5106204924290775
+ticker_limit_50,50,,,,,ticker_limit_50/results/model_metrics.csv,model,2026-05-10T21:59:59,random_forest,2024-01-01,28898,0.5271299051837497,0.4793459500053544,0.5075559024967066
