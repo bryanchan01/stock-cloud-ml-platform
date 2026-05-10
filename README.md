@@ -119,6 +119,22 @@ make train MODEL=random_forest
 make backtest MODEL=random_forest
 ```
 
+After running multiple experiments, generate report-ready summaries:
+
+```bash
+python -m src.experiments.summarize_experiments --experiments-dir experiments
+```
+
+This creates:
+
+- `experiments/summary_model_metrics.csv`
+- `experiments/summary_backtest_metrics.csv`
+- `experiments/summary_benchmark.csv`
+- `experiments/summary.md`
+- `experiments/summary_plots/*.png`
+
+The summarizer reads either `results/*.csv` or `data/results/*.csv` inside each experiment folder, logs missing files, and continues.
+
 ## Outputs
 
 - Raw data: `data/raw/prices.csv`, `data/raw/prices.parquet`
