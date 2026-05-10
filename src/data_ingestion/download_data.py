@@ -7,7 +7,7 @@ from typing import Iterable
 
 import pandas as pd
 
-from src.utils.config_loader import ensure_parent_dir, load_config, project_path
+from src.utils.config_loader import as_bool, ensure_parent_dir, load_config, project_path
 from src.utils.logger import get_logger
 
 
@@ -40,17 +40,29 @@ def read_ticker_file(path: str | Path) -> list[str]:
 
 def resolve_tickers(config: dict, args: argparse.Namespace) -> list[str]:
     if args.tickers:
-        tickers = [ticker.upper() for ticker in args.tickers]
+        tickers = args.tickers
     elif args.ticker_file:
         tickers = read_ticker_file(args.ticker_file)
     elif config["data"].get("ticker_file"):
         tickers = read_ticker_file(config["data"]["ticker_file"])
     else:
-        tickers = [ticker.upper() for ticker in config["data"]["tickers"]]
+        tickers = config["data"]["tickers"]
 
-    unique_tickers = list(dict.fromkeys(tickers))
     if args.limit:
-        unique_tickers = unique_tickers[: args.limit]
+        tickers = tickers[: args.limit]
+
+    unique_tickers = []
+    for ticker in tickers:
+        if isinstance(ticker, bool):
+            raise ValueError(
+                "Ticker values must be strings. Quote YAML-sensitive tickers like "
+                "`ON`, `OFF`, `YES`, `NO`, `TRUE`, or `FALSE` in config/config.yaml."
+            )
+        normalized = str(ticker).strip().upper()
+        if normalized:
+            unique_tickers.append(normalized)
+
+    unique_tickers = list(dict.fromkeys(unique_tickers))
     if not unique_tickers:
         raise ValueError("No tickers were provided.")
     return unique_tickers
@@ -127,7 +139,7 @@ def download_prices(config: dict, args: argparse.Namespace) -> pd.DataFrame:
     start = args.start or config["data"]["start_date"]
     end = args.end or config["data"].get("end_date") or date.today().isoformat()
     interval = config["data"].get("interval", "1d")
-    auto_adjust = bool(config["data"].get("auto_adjust", True))
+    auto_adjust = as_bool(config["data"].get("auto_adjust"), default=True)
 
     LOGGER.info(
         "Downloading %d tickers from %s to %s with interval=%s",
@@ -170,4 +182,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
