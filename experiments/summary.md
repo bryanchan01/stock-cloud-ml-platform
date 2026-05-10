@@ -7,6 +7,12 @@ Generated from experiment folders under `experiments/`.
 | run_id | ticker_limit | model | accuracy | f1 | area_under_roc | test_rows |
 | --- | --- | --- | --- | --- | --- | --- |
 | 2026-05-10_223848_limit_10_logistic_regression | 10 | logistic_regression | 0.5203 | 0.4888 | 0.5063 | 5614 |
+| 2026-05-10_232100_limit_10_logistic_regression | 10 | logistic_regression | 0.5203 | 0.4888 | 0.5063 | 5614 |
+| 2026-05-10_232247_limit_10_random_forest | 10 | random_forest | 0.5093 | 0.4845 | 0.4971 | 5614 |
+| 2026-05-10_232432_limit_50_logistic_regression | 50 | logistic_regression | 0.5280 | 0.4632 | 0.5106 | 28898 |
+| 2026-05-10_232627_limit_50_random_forest | 50 | random_forest | 0.5251 | 0.4750 | 0.5063 | 28898 |
+| 2026-05-10_232830_limit_100_logistic_regression | 100 | logistic_regression | 0.5246 | 0.4516 | 0.5086 | 57762 |
+| 2026-05-10_233041_limit_100_random_forest | 100 | random_forest | 0.5250 | 0.4537 | 0.5055 | 57762 |
 | ticker_limit_10 | 10 | logistic_regression | 0.5203 | 0.4888 | 0.5063 | 5614 |
 | ticker_limit_10 | 10 | random_forest | 0.5093 | 0.4845 | 0.4971 | 5614 |
 | ticker_limit_100 | 100 | logistic_regression | 0.5246 | 0.4516 | 0.5086 | 57762 |
@@ -20,6 +26,18 @@ Generated from experiment folders under `experiments/`.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2026-05-10_223848_limit_10_logistic_regression | 10 | logistic_regression | model_long_cash | 0.7908 | 0.2831 | 1.1650 | -0.2710 | 0.5416 |
 | 2026-05-10_223848_limit_10_logistic_regression | 10 | logistic_regression | equal_weight_buy_hold | 2.8785 | 0.7859 | 2.0432 | -0.2885 | 0.5552 |
+| 2026-05-10_232100_limit_10_logistic_regression | 10 | logistic_regression | model_long_cash | 0.7908 | 0.2831 | 1.1650 | -0.2710 | 0.5416 |
+| 2026-05-10_232100_limit_10_logistic_regression | 10 | logistic_regression | equal_weight_buy_hold | 2.8785 | 0.7859 | 2.0432 | -0.2885 | 0.5552 |
+| 2026-05-10_232247_limit_10_random_forest | 10 | random_forest | model_long_cash | 0.8302 | 0.2951 | 1.2218 | -0.2208 | 0.5450 |
+| 2026-05-10_232247_limit_10_random_forest | 10 | random_forest | equal_weight_buy_hold | 2.8785 | 0.7859 | 2.0432 | -0.2885 | 0.5552 |
+| 2026-05-10_232432_limit_50_logistic_regression | 50 | logistic_regression | model_long_cash | 1.5453 | 0.4914 | 1.7375 | -0.2617 | 0.5823 |
+| 2026-05-10_232432_limit_50_logistic_regression | 50 | logistic_regression | equal_weight_buy_hold | 3.2249 | 0.8525 | 2.2047 | -0.3017 | 0.5976 |
+| 2026-05-10_232627_limit_50_random_forest | 50 | random_forest | model_long_cash | 1.5677 | 0.4970 | 1.8562 | -0.2145 | 0.5688 |
+| 2026-05-10_232627_limit_50_random_forest | 50 | random_forest | equal_weight_buy_hold | 3.2249 | 0.8525 | 2.2047 | -0.3017 | 0.5976 |
+| 2026-05-10_232830_limit_100_logistic_regression | 100 | logistic_regression | model_long_cash | 1.1904 | 0.3986 | 1.6497 | -0.2368 | 0.5688 |
+| 2026-05-10_232830_limit_100_logistic_regression | 100 | logistic_regression | equal_weight_buy_hold | 2.3059 | 0.6679 | 2.0704 | -0.2797 | 0.5756 |
+| 2026-05-10_233041_limit_100_random_forest | 100 | random_forest | model_long_cash | 1.2814 | 0.4232 | 1.7504 | -0.2092 | 0.5671 |
+| 2026-05-10_233041_limit_100_random_forest | 100 | random_forest | equal_weight_buy_hold | 2.3059 | 0.6679 | 2.0704 | -0.2797 | 0.5756 |
 | ticker_limit_10 | 10 |  | model_long_cash | 0.7908 | 0.2831 | 1.1650 | -0.2710 | 0.5416 |
 | ticker_limit_10 | 10 |  | equal_weight_buy_hold | 2.8785 | 0.7859 | 2.0432 | -0.2885 | 0.5552 |
 | ticker_limit_100 | 100 |  | model_long_cash | 1.1859 | 0.3974 | 1.6437 | -0.2383 | 0.5688 |
@@ -39,28 +57,28 @@ Generated from experiment folders under `experiments/`.
 | 2026-05-10_223848_limit_10_logistic_regression | 10 | spark_local | 10 | 1 | 2.5742 | 0.0001 |
 | 2026-05-10_223848_limit_10_logistic_regression | 10 | spark_local | 10 | 2 | 2.2925 | 0.0001 |
 | 2026-05-10_223848_limit_10_logistic_regression | 10 | spark_local | 10 | 4 | 2.2788 | 0.0001 |
-| ticker_limit_10 | 10 | pandas | 3 | 1 | 0.0273 | 0.0000 |
-| ticker_limit_10 | 10 | pandas | 10 | 1 | 0.0486 | 0.0000 |
-| ticker_limit_10 | 10 | spark_local | 3 | 1 | 5.1468 | 0.0001 |
-| ticker_limit_10 | 10 | spark_local | 3 | 2 | 2.5907 | 0.0001 |
-| ticker_limit_10 | 10 | spark_local | 3 | 4 | 2.3043 | 0.0001 |
-| ticker_limit_10 | 10 | spark_local | 10 | 1 | 2.5451 | 0.0001 |
-| ticker_limit_10 | 10 | spark_local | 10 | 2 | 2.3227 | 0.0001 |
-| ticker_limit_10 | 10 | spark_local | 10 | 4 | 2.3817 | 0.0001 |
-| ticker_limit_100 | 100 | pandas | 3 | 1 | 0.0392 | 0.0000 |
-| ticker_limit_100 | 100 | pandas | 10 | 1 | 0.0584 | 0.0000 |
-| ticker_limit_100 | 100 | spark_local | 3 | 1 | 5.4083 | 0.0001 |
-| ticker_limit_100 | 100 | spark_local | 3 | 2 | 2.7051 | 0.0001 |
-| ticker_limit_100 | 100 | spark_local | 3 | 4 | 2.3907 | 0.0001 |
-| ticker_limit_100 | 100 | spark_local | 10 | 1 | 2.6189 | 0.0001 |
-| ticker_limit_100 | 100 | spark_local | 10 | 2 | 2.4608 | 0.0001 |
-| ticker_limit_100 | 100 | spark_local | 10 | 4 | 2.4540 | 0.0001 |
-| ticker_limit_50 | 50 | pandas | 3 | 1 | 0.0366 | 0.0000 |
-| ticker_limit_50 | 50 | pandas | 10 | 1 | 0.0528 | 0.0000 |
-| ticker_limit_50 | 50 | spark_local | 3 | 1 | 5.2805 | 0.0001 |
-| ticker_limit_50 | 50 | spark_local | 3 | 2 | 2.6892 | 0.0001 |
-| ticker_limit_50 | 50 | spark_local | 3 | 4 | 2.2328 | 0.0001 |
-| ticker_limit_50 | 50 | spark_local | 10 | 1 | 2.6379 | 0.0001 |
+| 2026-05-10_232100_limit_10_logistic_regression | 10 | pandas | 3 | 1 | 0.0352 | 0.0000 |
+| 2026-05-10_232100_limit_10_logistic_regression | 10 | pandas | 10 | 1 | 0.0620 | 0.0000 |
+| 2026-05-10_232100_limit_10_logistic_regression | 10 | spark_local | 3 | 1 | 5.0322 | 0.0001 |
+| 2026-05-10_232100_limit_10_logistic_regression | 10 | spark_local | 3 | 2 | 2.5908 | 0.0001 |
+| 2026-05-10_232100_limit_10_logistic_regression | 10 | spark_local | 3 | 4 | 2.2771 | 0.0001 |
+| 2026-05-10_232100_limit_10_logistic_regression | 10 | spark_local | 10 | 1 | 2.4300 | 0.0001 |
+| 2026-05-10_232100_limit_10_logistic_regression | 10 | spark_local | 10 | 2 | 2.3242 | 0.0001 |
+| 2026-05-10_232100_limit_10_logistic_regression | 10 | spark_local | 10 | 4 | 2.3369 | 0.0001 |
+| 2026-05-10_232247_limit_10_random_forest | 10 | pandas | 3 | 1 | 0.0270 | 0.0000 |
+| 2026-05-10_232247_limit_10_random_forest | 10 | pandas | 10 | 1 | 0.0474 | 0.0000 |
+| 2026-05-10_232247_limit_10_random_forest | 10 | spark_local | 3 | 1 | 4.9079 | 0.0001 |
+| 2026-05-10_232247_limit_10_random_forest | 10 | spark_local | 3 | 2 | 2.4842 | 0.0001 |
+| 2026-05-10_232247_limit_10_random_forest | 10 | spark_local | 3 | 4 | 2.3111 | 0.0001 |
+| 2026-05-10_232247_limit_10_random_forest | 10 | spark_local | 10 | 1 | 2.6314 | 0.0001 |
+| 2026-05-10_232247_limit_10_random_forest | 10 | spark_local | 10 | 2 | 2.2422 | 0.0001 |
+| 2026-05-10_232247_limit_10_random_forest | 10 | spark_local | 10 | 4 | 2.2730 | 0.0001 |
+| 2026-05-10_232432_limit_50_logistic_regression | 50 | pandas | 3 | 1 | 0.0331 | 0.0000 |
+| 2026-05-10_232432_limit_50_logistic_regression | 50 | pandas | 10 | 1 | 0.0530 | 0.0000 |
+| 2026-05-10_232432_limit_50_logistic_regression | 50 | spark_local | 3 | 1 | 5.3017 | 0.0001 |
+| 2026-05-10_232432_limit_50_logistic_regression | 50 | spark_local | 3 | 2 | 2.7505 | 0.0001 |
+| 2026-05-10_232432_limit_50_logistic_regression | 50 | spark_local | 3 | 4 | 2.2156 | 0.0001 |
+| 2026-05-10_232432_limit_50_logistic_regression | 50 | spark_local | 10 | 1 | 2.7156 | 0.0001 |
 
 ## Generated Plots
 
