@@ -2,6 +2,8 @@ PYTHON ?= python
 CONFIG ?= config/config.yaml
 MODEL ?= logistic_regression
 TICKER_LIMIT ?=
+PREDICTION_PATH ?= data/predictions/$(MODEL)_predictions.parquet
+BENCHMARK_TICKER_COUNTS ?=
 
 .PHONY: help install download features train train-all backtest benchmark cost smoke clean docker-build docker-run
 
@@ -12,7 +14,7 @@ help:
 	@echo "  make features      Build Spark feature Parquet"
 	@echo "  make train         Train MODEL=logistic_regression|random_forest|baseline"
 	@echo "  make train-all     Train baseline, logistic regression, and random forest"
-	@echo "  make backtest      Backtest configured predictions"
+	@echo "  make backtest      Backtest predictions for MODEL=logistic_regression|random_forest|baseline"
 	@echo "  make benchmark     Run pandas vs Spark benchmark"
 	@echo "  make smoke         Run synthetic end-to-end smoke test"
 	@echo "  make docker-build  Build Docker image"
@@ -35,10 +37,10 @@ train-all:
 	$(PYTHON) -m src.models.train_spark_ml --config $(CONFIG) --model all
 
 backtest:
-	$(PYTHON) -m src.backtesting.backtest --config $(CONFIG)
+	$(PYTHON) -m src.backtesting.backtest --config $(CONFIG) --predictions $(PREDICTION_PATH)
 
 benchmark:
-	$(PYTHON) -m src.experiments.benchmark_spark --config $(CONFIG)
+	$(PYTHON) -m src.experiments.benchmark_spark --config $(CONFIG) $(if $(BENCHMARK_TICKER_COUNTS),--ticker-counts $(BENCHMARK_TICKER_COUNTS),)
 
 cost:
 	$(PYTHON) -m src.experiments.cost_estimator --config $(CONFIG) --hours 2 --instance t3_large
@@ -54,4 +56,3 @@ docker-build:
 
 docker-run:
 	docker compose run --rm stock-ml make smoke
-

@@ -88,6 +88,37 @@ python -m src.backtesting.backtest --config config/config.yaml
 python -m src.experiments.benchmark_spark --config config/config.yaml
 ```
 
+## Repeatable EC2 Experiments
+
+Use the experiment runner for repeatable AWS EC2 runs across dataset sizes and models:
+
+```bash
+bash scripts/run_experiment.sh --limit 10 --model logistic_regression
+bash scripts/run_experiment.sh --limit 50 --model random_forest
+bash scripts/run_experiment.sh --limit 100 --model logistic_regression
+```
+
+Each run creates a timestamped folder under `experiments/`, for example:
+
+```text
+experiments/2026-05-11_153000_limit_50_random_forest/
+```
+
+The runner:
+
+- Cleans generated `data/raw/`, `data/processed/`, `data/predictions/`, `data/results/`, and the selected `models/<model>/` folder.
+- Runs `make download`, `make features`, `make train`, `make backtest`, and `make benchmark`.
+- Saves all terminal output to `run.log`.
+- Saves environment metadata to `metadata.txt`.
+- Copies `data/results/`, `data/predictions/`, the selected model folder, and `config/config.yaml` into the experiment folder.
+
+For manual backtesting with non-default models, pass `MODEL`:
+
+```bash
+make train MODEL=random_forest
+make backtest MODEL=random_forest
+```
+
 ## Outputs
 
 - Raw data: `data/raw/prices.csv`, `data/raw/prices.parquet`
