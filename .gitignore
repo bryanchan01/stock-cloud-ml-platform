@@ -1,0 +1,31 @@
+.venv/
+__pycache__/
+*.pyc
+
+# AWS / secrets
+*.pem
+.aws/
+.env
+.env.*
+
+# Generated data
+data/raw/
+data/processed/
+data/predictions/
+data/results/
+
+# Large model outputs
+models/
+
+# Logs
+*.log
+
+
+# Generated experiment outputs
+experiments/**/predictions/
+experiments/**/results/benchmark_tmp/
+experiments/**/*.parquet/
+experiments/**/*.crc
+experiments/**/_SUCCESS
+
+# Keep only small summary/report artifacts if needed
