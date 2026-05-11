@@ -1,0 +1,7 @@
+run_id,ticker_limit,model,stage,runtime_seconds,timestamp,git_commit,hostname
+2026-05-11_001156_limit_100_logistic_regression,100,logistic_regression,download,13,2026-05-11T00:12:09+00:00,9b47b38,ip-172-31-93-86
+2026-05-11_001156_limit_100_logistic_regression,100,logistic_regression,feature_engineering,34,2026-05-11T00:12:43+00:00,9b47b38,ip-172-31-93-86
+2026-05-11_001156_limit_100_logistic_regression,100,logistic_regression,train,40,2026-05-11T00:13:23+00:00,9b47b38,ip-172-31-93-86
+2026-05-11_001156_limit_100_logistic_regression,100,logistic_regression,backtest,0,2026-05-11T00:13:23+00:00,9b47b38,ip-172-31-93-86
+2026-05-11_001156_limit_100_logistic_regression,100,logistic_regression,benchmark,42,2026-05-11T00:14:05+00:00,9b47b38,ip-172-31-93-86
+2026-05-11_001156_limit_100_logistic_regression,100,logistic_regression,total_pipeline,129,2026-05-11T00:14:05+00:00,9b47b38,ip-172-31-93-86

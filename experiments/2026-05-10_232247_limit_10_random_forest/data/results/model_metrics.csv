@@ -1,2 +1,0 @@
-timestamp_utc,model,split_date,test_rows,accuracy,f1,area_under_roc
-2026-05-10T23:23:46,random_forest,2024-01-01,5614,0.5092625578909868,0.4845357000036581,0.4971120138922081

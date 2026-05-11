@@ -1,2 +1,0 @@
-timestamp_utc,model,split_date,test_rows,accuracy,f1,area_under_roc
-2026-05-10T23:21:56,logistic_regression,2024-01-01,5614,0.5203063769148557,0.48879652881259555,0.5062541063263715
