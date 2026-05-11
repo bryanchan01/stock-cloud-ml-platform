@@ -110,6 +110,7 @@ The runner:
 - Runs `make download`, `make features`, `make train`, `make backtest`, and `make benchmark`.
 - Saves all terminal output to `run.log`.
 - Saves environment metadata to `metadata.txt`.
+- Saves stage-level wall-clock timings to `stage_times.csv` for `download`, `feature_engineering`, `train`, `backtest`, `benchmark`, and `total_pipeline`.
 - Copies `data/results/`, `data/predictions/`, the selected model folder, and `config/config.yaml` into the experiment folder.
 
 For manual backtesting with non-default models, pass `MODEL`:
@@ -125,15 +126,27 @@ After running multiple experiments, generate report-ready summaries:
 python -m src.experiments.summarize_experiments --experiments-dir experiments
 ```
 
+To ignore old manually created folders such as `experiments/ticker_limit_10/`, summarize only timestamped runs from `scripts/run_experiment.sh`:
+
+```bash
+python -m src.experiments.summarize_experiments --experiments-dir experiments --only-timestamped
+```
+
 This creates:
 
 - `experiments/summary_model_metrics.csv`
 - `experiments/summary_backtest_metrics.csv`
 - `experiments/summary_benchmark.csv`
+- `experiments/summary_stage_times.csv`
 - `experiments/summary.md`
 - `experiments/summary_plots/*.png`
 
-The summarizer reads either `results/*.csv` or `data/results/*.csv` inside each experiment folder, logs missing files, and continues.
+The summary plots include model/backtest metrics plus actual end-to-end stage timing plots:
+
+- `experiments/summary_plots/stage_runtime_vs_ticker_limit.png`
+- `experiments/summary_plots/total_runtime_vs_ticker_limit.png`
+
+The summarizer reads either `results/*.csv` or `data/results/*.csv` inside each experiment folder, reads `stage_times.csv` when available, logs missing files, and continues.
 
 ## Outputs
 
