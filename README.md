@@ -4,6 +4,14 @@ This project is a course-sized cloud ML systems platform for historical stock tr
 
 It is not financial advice and it is not a production trading system. The goal is to demonstrate distributed data processing, ML pipeline automation, cloud deployment, backtesting, and cost/performance evaluation.
 
+## Group Member
+
+This is an individual project.
+
+| Name | Student ID | Email | 
+|---|---|---|
+| Chen Yunong | 21239367 | ychenqm@connect.ust.hk |
+
 ## Core Scope
 
 - Historical batch ingestion from `yfinance` into CSV and Parquet.
@@ -147,6 +155,21 @@ The summary plots include model/backtest metrics plus actual end-to-end stage ti
 - `experiments/summary_plots/total_runtime_vs_ticker_limit.png`
 
 The summarizer reads either `results/*.csv` or `data/results/*.csv` inside each experiment folder, reads `stage_times.csv` when available, logs missing files, and continues.
+
+## Generate Editable Final Report
+
+The editable report source is a Word-compatible document:
+
+```bash
+python -m src.reporting.generate_report_docx
+```
+
+This generates:
+
+- `docs/final_report.docx`
+- `docs/final_report.md`
+
+After reviewing and editing `docs/final_report.docx` in Microsoft Word, WPS, or Google Docs, export it manually to PDF for final course submission.
 
 ## Outputs
 
