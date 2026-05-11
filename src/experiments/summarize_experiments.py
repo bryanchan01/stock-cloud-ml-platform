@@ -16,7 +16,11 @@ RESULT_FILES = {
     "backtest": "backtest_metrics.csv",
     "benchmark": "benchmark_results.csv",
 }
+STAGE_TIMES_FILE = "stage_times.csv"
 PLOTS_DIR_NAME = "summary_plots"
+TIMESTAMPED_RUN_RE = re.compile(
+    r"^\d{4}-\d{2}-\d{2}_\d{4}(?:\d{2})?_limit_\d+_[A-Za-z0-9._-]+$"
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -25,6 +29,11 @@ def parse_args() -> argparse.Namespace:
         "--experiments-dir",
         default="experiments",
         help="Directory containing experiment run folders.",
+    )
+    parser.add_argument(
+        "--only-timestamped",
+        action="store_true",
+        help="Ignore old manual folders that do not match timestamped run ids.",
     )
     return parser.parse_args()
 
@@ -75,6 +84,7 @@ def infer_model(run_id: str, metadata: dict[str, str]) -> str | None:
 
 def result_path(run_dir: Path, filename: str) -> Path | None:
     candidates = [
+        run_dir / filename,
         run_dir / "results" / filename,
         run_dir / "data" / "results" / filename,
     ]
@@ -86,7 +96,11 @@ def result_path(run_dir: Path, filename: str) -> Path | None:
     return matches[0] if matches else None
 
 
-def discover_runs(experiments_dir: Path) -> list[Path]:
+def is_timestamped_run(run_dir: Path) -> bool:
+    return bool(TIMESTAMPED_RUN_RE.match(run_dir.name))
+
+
+def discover_runs(experiments_dir: Path, only_timestamped: bool = False) -> list[Path]:
     if not experiments_dir.exists():
         raise FileNotFoundError(f"Experiments directory does not exist: {experiments_dir}")
 
@@ -94,8 +108,12 @@ def discover_runs(experiments_dir: Path) -> list[Path]:
     for child in sorted(experiments_dir.iterdir()):
         if not child.is_dir() or child.name == PLOTS_DIR_NAME:
             continue
+        if only_timestamped and not is_timestamped_run(child):
+            LOGGER.info("Skipping non-timestamped experiment folder: %s", child.name)
+            continue
         has_result = any(result_path(child, filename) for filename in RESULT_FILES.values())
-        if has_result or (child / "metadata.txt").exists():
+        has_stage_times = result_path(child, STAGE_TIMES_FILE) is not None
+        if has_result or has_stage_times or (child / "metadata.txt").exists():
             run_dirs.append(child)
     return run_dirs
 
@@ -130,20 +148,60 @@ def load_result_frame(
     return frame
 
 
-def collect_results(experiments_dir: Path) -> dict[str, pd.DataFrame]:
-    runs = discover_runs(experiments_dir)
+def load_stage_times_frame(run_dir: Path, experiments_dir: Path) -> pd.DataFrame | None:
+    metadata = parse_metadata(run_dir / "metadata.txt")
+    relative_run_id = run_dir.relative_to(experiments_dir).as_posix()
+    path = result_path(run_dir, STAGE_TIMES_FILE)
+    if not path:
+        LOGGER.warning("Missing %s for run=%s", STAGE_TIMES_FILE, relative_run_id)
+        return None
+
+    try:
+        frame = pd.read_csv(path)
+    except Exception as exc:
+        LOGGER.warning(
+            "Could not read %s for run=%s: %s", STAGE_TIMES_FILE, relative_run_id, exc
+        )
+        return None
+
+    fallback_values = {
+        "run_id": relative_run_id,
+        "ticker_limit": infer_ticker_limit(relative_run_id, metadata),
+        "model": infer_model(relative_run_id, metadata),
+        "timestamp": metadata.get("timestamp"),
+        "git_commit": metadata.get("git_commit"),
+        "hostname": metadata.get("hostname"),
+    }
+    for column, value in fallback_values.items():
+        if column not in frame.columns:
+            frame[column] = value
+        else:
+            frame[column] = frame[column].fillna(value)
+
+    frame.insert(0, "source_file", path.relative_to(experiments_dir).as_posix())
+    return frame
+
+
+def collect_results(
+    experiments_dir: Path, only_timestamped: bool = False
+) -> dict[str, pd.DataFrame]:
+    runs = discover_runs(experiments_dir, only_timestamped=only_timestamped)
     LOGGER.info("Found %d experiment run folders", len(runs))
 
     collected: dict[str, list[pd.DataFrame]] = {
         "model": [],
         "backtest": [],
         "benchmark": [],
+        "stage": [],
     }
     for run_dir in runs:
         for result_kind, filename in RESULT_FILES.items():
             frame = load_result_frame(run_dir, experiments_dir, result_kind, filename)
             if frame is not None:
                 collected[result_kind].append(frame)
+        stage_frame = load_stage_times_frame(run_dir, experiments_dir)
+        if stage_frame is not None:
+            collected["stage"].append(stage_frame)
 
     return {
         kind: pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
@@ -156,6 +214,7 @@ def write_summary_csvs(experiments_dir: Path, results: dict[str, pd.DataFrame]) 
         "model": experiments_dir / "summary_model_metrics.csv",
         "backtest": experiments_dir / "summary_backtest_metrics.csv",
         "benchmark": experiments_dir / "summary_benchmark.csv",
+        "stage": experiments_dir / "summary_stage_times.csv",
     }
     for kind, output in outputs.items():
         results[kind].to_csv(output, index=False)
@@ -211,11 +270,23 @@ def write_summary_markdown(experiments_dir: Path, results: dict[str, pd.DataFram
         "runtime_seconds",
         "estimated_t3_large_cost_usd",
     ]
+    stage_columns = [
+        "run_id",
+        "ticker_limit",
+        "model",
+        "stage",
+        "runtime_seconds",
+        "timestamp",
+        "git_commit",
+        "hostname",
+    ]
 
     content = "\n\n".join(
         [
             "# Experiment Summary",
             "Generated from experiment folders under `experiments/`.",
+            "## Stage Runtime Metrics",
+            markdown_table(results["stage"], stage_columns, max_rows=60),
             "## Model Metrics",
             markdown_table(results["model"], model_columns),
             "## Backtest Metrics",
@@ -226,6 +297,8 @@ def write_summary_markdown(experiments_dir: Path, results: dict[str, pd.DataFram
             "\n".join(
                 [
                     f"- `{PLOTS_DIR_NAME}/runtime_vs_ticker_limit.png`",
+                    f"- `{PLOTS_DIR_NAME}/stage_runtime_vs_ticker_limit.png`",
+                    f"- `{PLOTS_DIR_NAME}/total_runtime_vs_ticker_limit.png`",
                     f"- `{PLOTS_DIR_NAME}/accuracy_vs_ticker_limit.png`",
                     f"- `{PLOTS_DIR_NAME}/f1_vs_ticker_limit.png`",
                     f"- `{PLOTS_DIR_NAME}/cumulative_return_vs_ticker_limit.png`",
@@ -243,11 +316,12 @@ def write_summary_markdown(experiments_dir: Path, results: dict[str, pd.DataFram
 
 def usable_numeric(frame: pd.DataFrame, columns: Iterable[str]) -> pd.DataFrame:
     result = frame.copy()
+    if result.empty or "ticker_limit" not in result.columns:
+        return pd.DataFrame()
     for column in columns:
         if column in result.columns:
             result[column] = pd.to_numeric(result[column], errors="coerce")
-    if "ticker_limit" in result.columns:
-        result["ticker_limit"] = pd.to_numeric(result["ticker_limit"], errors="coerce")
+    result["ticker_limit"] = pd.to_numeric(result["ticker_limit"], errors="coerce")
     return result.dropna(subset=["ticker_limit"])
 
 
@@ -303,6 +377,17 @@ def benchmark_runtime_frame(benchmark: pd.DataFrame) -> pd.DataFrame:
     return frame[frame["ticker_count"] == max_by_run]
 
 
+def stage_runtime_frames(stage_times: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    if stage_times.empty:
+        return stage_times, stage_times
+    frame = usable_numeric(stage_times, ["ticker_limit", "runtime_seconds"])
+    if frame.empty or "stage" not in frame.columns:
+        return frame, frame
+    stage_detail = frame[frame["stage"] != "total_pipeline"]
+    total = frame[frame["stage"] == "total_pipeline"]
+    return stage_detail, total
+
+
 def generate_plots(experiments_dir: Path, results: dict[str, pd.DataFrame]) -> None:
     plots_dir = experiments_dir / PLOTS_DIR_NAME
 
@@ -315,6 +400,26 @@ def generate_plots(experiments_dir: Path, results: dict[str, pd.DataFrame]) -> N
         title="Runtime vs Ticker Limit",
         ylabel="Runtime seconds",
         output=plots_dir / "runtime_vs_ticker_limit.png",
+    )
+
+    stage_detail, total_stage = stage_runtime_frames(results["stage"])
+    save_line_plot(
+        stage_detail,
+        x_col="ticker_limit",
+        y_col="runtime_seconds",
+        group_col="stage",
+        title="Stage Runtime vs Ticker Limit",
+        ylabel="Runtime seconds",
+        output=plots_dir / "stage_runtime_vs_ticker_limit.png",
+    )
+    save_line_plot(
+        total_stage,
+        x_col="ticker_limit",
+        y_col="runtime_seconds",
+        group_col="model",
+        title="Total Pipeline Runtime vs Ticker Limit",
+        ylabel="Runtime seconds",
+        output=plots_dir / "total_runtime_vs_ticker_limit.png",
     )
 
     model = usable_numeric(results["model"], ["ticker_limit", "accuracy", "f1"])
@@ -370,8 +475,10 @@ def generate_plots(experiments_dir: Path, results: dict[str, pd.DataFrame]) -> N
     )
 
 
-def summarize_experiments(experiments_dir: Path) -> dict[str, pd.DataFrame]:
-    results = collect_results(experiments_dir)
+def summarize_experiments(
+    experiments_dir: Path, only_timestamped: bool = False
+) -> dict[str, pd.DataFrame]:
+    results = collect_results(experiments_dir, only_timestamped=only_timestamped)
     experiments_dir.mkdir(parents=True, exist_ok=True)
     write_summary_csvs(experiments_dir, results)
     write_summary_markdown(experiments_dir, results)
@@ -381,7 +488,9 @@ def summarize_experiments(experiments_dir: Path) -> dict[str, pd.DataFrame]:
 
 def main() -> None:
     args = parse_args()
-    summarize_experiments(Path(args.experiments_dir))
+    summarize_experiments(
+        Path(args.experiments_dir), only_timestamped=args.only_timestamped
+    )
 
 
 if __name__ == "__main__":
