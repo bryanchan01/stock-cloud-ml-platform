@@ -60,12 +60,17 @@ cd "$REPO_ROOT"
 
 TIMESTAMP="$(date +"%Y-%m-%d_%H%M%S")"
 SAFE_MODEL="$(printf '%s' "$MODEL" | tr -c 'A-Za-z0-9._-' '_')"
-EXPERIMENT_DIR="experiments/${TIMESTAMP}_limit_${LIMIT}_${SAFE_MODEL}"
+RUN_ID="${TIMESTAMP}_limit_${LIMIT}_${SAFE_MODEL}"
+EXPERIMENT_DIR="experiments/${RUN_ID}"
 LOG_FILE="${EXPERIMENT_DIR}/run.log"
 METADATA_FILE="${EXPERIMENT_DIR}/metadata.txt"
+STAGE_TIMES_FILE="${EXPERIMENT_DIR}/stage_times.csv"
+TOTAL_STARTED_AT=""
+TOTAL_RECORDED=0
 
 mkdir -p "$EXPERIMENT_DIR"
 touch "$LOG_FILE"
+printf 'run_id,ticker_limit,model,stage,runtime_seconds,timestamp,git_commit,hostname\n' > "$STAGE_TIMES_FILE"
 
 copy_artifacts() {
   set +e
@@ -93,6 +98,10 @@ copy_artifacts() {
 
 finalize() {
   local exit_code=$?
+  if [[ -n "${TOTAL_STARTED_AT}" && "${TOTAL_RECORDED}" -eq 0 ]]; then
+    append_stage_time "total_pipeline" "$TOTAL_STARTED_AT" "$(date +%s)"
+    TOTAL_RECORDED=1
+  fi
   {
     echo
     echo "completed_at=$(date -Is)"
@@ -145,6 +154,42 @@ run_cmd() {
   "$@"
 }
 
+append_stage_time() {
+  local stage="$1"
+  local started_at="$2"
+  local finished_at="$3"
+  local runtime_seconds=$((finished_at - started_at))
+  printf '%s,%s,%s,%s,%s,%s,%s,%s\n' \
+    "$RUN_ID" \
+    "$LIMIT" \
+    "$MODEL" \
+    "$stage" \
+    "$runtime_seconds" \
+    "$(date -Is)" \
+    "$GIT_COMMIT" \
+    "$(hostname 2>/dev/null || printf 'unavailable')" \
+    >> "$STAGE_TIMES_FILE"
+}
+
+run_stage() {
+  local stage="$1"
+  shift
+  local started_at
+  local finished_at
+  local exit_code
+  started_at="$(date +%s)"
+  echo
+  echo "=== Stage: ${stage} started at $(date -Is) ==="
+  set +e
+  run_cmd "$@"
+  exit_code=$?
+  set -e
+  finished_at="$(date +%s)"
+  append_stage_time "$stage" "$started_at" "$finished_at"
+  echo "=== Stage: ${stage} finished in $((finished_at - started_at)) seconds with exit_code=${exit_code} ==="
+  return "$exit_code"
+}
+
 clean_dir_contents() {
   local dir="$1"
   mkdir -p "$dir"
@@ -163,12 +208,14 @@ clean_dir_contents data/results
 rm -rf "models/${MODEL}"
 mkdir -p data/raw data/processed data/predictions data/results/plots models
 
-run_cmd make download "TICKER_LIMIT=${LIMIT}"
-run_cmd make features
-run_cmd make train "MODEL=${MODEL}"
-run_cmd make backtest "MODEL=${MODEL}"
-run_cmd make benchmark
+TOTAL_STARTED_AT="$(date +%s)"
+run_stage download make download "TICKER_LIMIT=${LIMIT}"
+run_stage feature_engineering make features
+run_stage train make train "MODEL=${MODEL}"
+run_stage backtest make backtest "MODEL=${MODEL}"
+run_stage benchmark make benchmark
+append_stage_time "total_pipeline" "$TOTAL_STARTED_AT" "$(date +%s)"
+TOTAL_RECORDED=1
 
 echo
 echo "Experiment completed successfully."
-
