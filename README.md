@@ -6,11 +6,9 @@ It is not financial advice and it is not a production trading system. The goal i
 
 ## Group Member
 
-This is an individual project.
-
-| Name | Student ID | Email | 
+| Name | Student ID | Email | GROUP |
 |---|---|---|
-| Chen Yunong | 21239367 | ychenqm@connect.ust.hk |
+| Chen Yunong | 21239367 | ychenqm@connect.ust.hk | Group 16 |
 
 ## Core Scope
 
