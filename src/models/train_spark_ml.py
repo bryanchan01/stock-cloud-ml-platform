@@ -12,7 +12,7 @@ from pyspark.ml.feature import StandardScaler, VectorAssembler
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 
-from src.spark_pipeline.feature_engineering import create_spark_session
+from src.spark_pipeline.feature_engineering import create_spark_session, remove_existing_output
 from src.utils.config_loader import ensure_dir, ensure_parent_dir, load_config, project_path
 from src.utils.logger import get_logger
 
@@ -170,6 +170,7 @@ def save_predictions(
 ) -> Path:
     output_dir = ensure_dir(predictions_dir)
     output_path = output_dir / f"{model_name}_predictions.parquet"
+    remove_existing_output(output_path)
     prediction_columns(predictions).write.mode("overwrite").parquet(str(output_path))
     LOGGER.info("Wrote %s predictions to %s", model_name, output_path)
     return output_path
@@ -180,6 +181,7 @@ def save_model(model, config: dict, model_name: str) -> None:
         return
     output_dir = ensure_dir(config["model"]["model_output_dir"])
     output_path = output_dir / model_name
+    remove_existing_output(output_path)
     model.write().overwrite().save(str(output_path))
     LOGGER.info("Saved %s model to %s", model_name, output_path)
 
@@ -244,4 +246,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
