@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import shutil
 from pathlib import Path
 
 from pyspark.sql import DataFrame, SparkSession, Window
@@ -36,6 +37,16 @@ def create_spark_session(config: dict, app_suffix: str = "Features") -> SparkSes
         .config("spark.sql.session.timeZone", "UTC")
     )
     return builder.getOrCreate()
+
+
+def remove_existing_output(path: Path) -> None:
+    if not path.exists():
+        return
+    LOGGER.info("Removing existing output at %s", path)
+    if path.is_dir():
+        shutil.rmtree(path)
+    else:
+        path.unlink()
 
 
 def read_prices(spark: SparkSession, path_value: str | Path) -> DataFrame:
@@ -161,6 +172,7 @@ def run_feature_pipeline(
         features = build_features(prices, config)
         output = ensure_parent_dir(output_path or config["features"]["output_path"])
         output_partitions = partitions or int(config["spark"].get("output_partitions", 4))
+        remove_existing_output(output)
         (
             features.repartition(output_partitions, "ticker")
             .write.mode("overwrite")
@@ -185,4 +197,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
